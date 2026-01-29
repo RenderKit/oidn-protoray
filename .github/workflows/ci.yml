@@ -1,0 +1,50 @@
+name: Continous Integration
+on:
+  [workflow_dispatch, pull_request]
+
+jobs:
+  test-build-lin:
+    secrets: inherit
+    uses: intel-innersource/libraries.devops.renderkit.workflows/.github/workflows/docker.yml@main
+    with:
+      image: base/ubuntu:24.04
+      runs-on: '[ "docker", "build" ]'
+      pre-cmd: |
+        echo "APT::Acquire::Retries \"3\";" | tee -a /etc/apt/apt.conf.d/80-retries
+        export DEBIAN_FRONTEND=noninteractive
+        apt update
+        apt upgrade -y
+        apt install build-essential cmake git -y
+        apt install libtbb-dev -y
+        apt install libembree-dev -y
+        apt install libboost-all-dev -y
+        apt install libsdl2-dev -y
+        apt install openimageio-tools libopenimageio-dev libopencv-dev -y
+      cmd: |
+        mkdir build
+        cd build
+        cmake ..
+        cmake --build .
+
+  static-analysis-lin:
+    secrets: inherit
+    uses: intel-innersource/libraries.devops.renderkit.workflows/.github/workflows/static_analysis.yml@main
+    with:
+      os: Linux
+      project: OIDN Protoray
+      server: prod20
+      prebuild: |
+        echo "APT::Acquire::Retries \"3\";" | tee -a /etc/apt/apt.conf.d/80-retries
+        export DEBIAN_FRONTEND=noninteractive
+        apt update
+        apt upgrade -y
+        apt install build-essential cmake git -y
+        apt install libtbb-dev -y
+        apt install libembree-dev -y
+        apt install libboost-all-dev -y
+        apt install libsdl2-dev -y
+        apt install openimageio-tools libopenimageio-dev libopencv-dev -y
+        mkdir build
+        cd build
+        cmake ..
+      build: cmake --build ./build
