@@ -64,6 +64,7 @@ private:
   View view, oldView;
   View prevView, nextView;
   View copiedView;
+  Vec3f copiedLightDir;
   int viewId;
   int defaultViewId;
   Vec3f viewPosDelta;

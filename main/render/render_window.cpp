@@ -540,6 +540,7 @@ void RenderWindow::onInit()
   // Set the active view to the default
   setActiveView(defaultViewId);
   copiedView = view;
+  copiedLightDir = lightDir;
 
   // Compute camera movement parameters
   viewPosStep = 0.2f * sceneScale;
@@ -1495,20 +1496,17 @@ void RenderWindow::resetView()
 void RenderWindow::setActiveView(int id)
 {
   viewId = id;
-  view = viewSet.views[id];
-  sequenceKeyframes[0].view = view;
+
+  sequenceKeyframes[0].view = viewSet.views[id];
   sequenceKeyframes[1].view = viewSet.views2[id];
 
   if (!std::isnan(viewSet.lightDirs[id].x))
-  {
-    lightDir = viewSet.lightDirs[id];
-    sequenceKeyframes[0].lightDir = lightDir;
-  }
-
+    sequenceKeyframes[0].lightDir = viewSet.lightDirs[id];
   if (!std::isnan(viewSet.lightDirs2[id].x))
     sequenceKeyframes[1].lightDir = viewSet.lightDirs2[id];
 
   Log() << "Active view: " << viewId;
+  setSequenceFrame(sequenceFrameIndex);
 }
 
 void RenderWindow::saveView()
@@ -2220,6 +2218,9 @@ bool RenderWindow::nextPreset()
 
 RenderWindow::Keyframe RenderWindow::getSequenceFrame(int i)
 {
+  if (sequenceFrameCount <= 1)
+    return sequenceKeyframes[0];
+
   Keyframe f;
 
   const float t = float(i) / float(sequenceFrameCount - 1);
@@ -2245,17 +2246,15 @@ RenderWindow::Keyframe RenderWindow::getSequenceFrame(int i)
 
 void RenderWindow::setSequenceFrame(int i)
 {
-  if (sequenceFrameCount < 2)
-    return;
-
-  Log() << "Sequence frame: " << i;
+  if (sequenceFrameCount > 1)
+    Log() << "Sequence frame: " << i;
 
   Keyframe frame = getSequenceFrame(i);
 
   // Update the view
   view = frame.view;
 
-  if (isSequencePlaying)
+  if (isSequencePlaying && sequenceFrameCount > 1)
   {
     oldView  = {}; // force rendering frame from scratch
     prevView = getSequenceFrame(max(i-1, 0)).view;
@@ -2339,23 +2338,35 @@ void RenderWindow::onKeyDown(int key)
     break;
 
   case Key::Home:
-    sequenceFrameIndex = 0;
-    setSequenceFrame(sequenceFrameIndex);
+    if (sequenceFrameCount > 1)
+    {
+      sequenceFrameIndex = 0;
+      setSequenceFrame(sequenceFrameIndex);
+    }
     break;
 
   case Key::End:
-    sequenceFrameIndex = sequenceFrameCount - 1;
-    setSequenceFrame(sequenceFrameIndex);
+    if (sequenceFrameCount > 1)
+    {
+      sequenceFrameIndex = sequenceFrameCount - 1;
+      setSequenceFrame(sequenceFrameIndex);
+    }
     break;
 
   case Key::PageUp:
-    sequenceFrameIndex = (sequenceFrameIndex - 1 + sequenceFrameCount) % sequenceFrameCount;
-    setSequenceFrame(sequenceFrameIndex);
+    if (sequenceFrameCount > 1)
+    {
+      sequenceFrameIndex = (sequenceFrameIndex - 1 + sequenceFrameCount) % sequenceFrameCount;
+      setSequenceFrame(sequenceFrameIndex);
+    }
     break;
 
   case Key::PageDown:
-    sequenceFrameIndex = (sequenceFrameIndex + 1) % sequenceFrameCount;
-    setSequenceFrame(sequenceFrameIndex);
+    if (sequenceFrameCount > 1)
+    {
+      sequenceFrameIndex = (sequenceFrameIndex + 1) % sequenceFrameCount;
+      setSequenceFrame(sequenceFrameIndex);
+    }
     break;
 
   default:
@@ -2384,12 +2395,18 @@ void RenderWindow::onKeyDown(int key)
   // Copy view
   case 'c':
     copiedView = view;
+    copiedLightDir = lightDir;
     Log() << "Copied view";
     break;
 
   // Paste view
   case 'v':
     view = copiedView;
+    if (lightDir != copiedLightDir)
+    {
+      lightDir = copiedLightDir;
+      isSceneChanged = true;
+    }
     Log() << "Pasted view";
     break;
 
@@ -2400,7 +2417,8 @@ void RenderWindow::onKeyDown(int key)
 
   // Loop sequence
   case 'l':
-    isSequencePlaying = !isSequencePlaying;
+    if (sequenceFrameCount > 1)
+      isSequencePlaying = !isSequencePlaying;
     break;
 
   // Mutate scene
