@@ -38,16 +38,32 @@ public:
     imageDx = basis * Vec3f(2.f*imageHalfWidth, 0.f, 0.f);
     imageDy = basis * Vec3f(0.f, -2.*imageHalfHeight, 0.f);
 
-    const Mat4f worldToCamera = Affine3f(basis, position).toLocalMat();
+    const Mat4f worldToView = Affine3f(basis, position).toLocalMat();
 
-    const Mat4f cameraToRaster =
+    const Mat4f viewToRaster =
       {rasterWidth / (2.f*imageHalfWidth), 0,    -rasterWidth/2.f,  0,
        0, -rasterHeight / (2.f*imageHalfHeight), -rasterHeight/2.f, 0,
        //0, 0, -farClip / (farClip - nearClip), -farClip * nearClip / (farClip - nearClip),
        0, 0, 0, nearClip, // reverse infinite perspective depth
        0, 0, -1, 0};
 
-    worldToRaster = cameraToRaster * worldToCamera;
+    worldToRaster = viewToRaster * worldToView;
+
+    const Vec3f P = position;
+    const Vec3f R = basis.U;
+    const Vec3f U = basis.V;
+    const Vec3f F = -basis.N;
+    worldToViewD3D =
+      {R.x, U.x, F.x, 0,
+       R.y, U.y, F.y, 0,
+       R.z, U.z, F.z, 0,
+       -dot(R, P), -dot(U, P), -dot(F, P), 1};
+
+    viewToClipD3D =
+      {1.f / imageHalfWidth, 0, 0, 0,
+       0, 1.f / imageHalfHeight, 0, 0,
+       0, 0, 0, 1,
+       0, 0, nearClip, 0};
   }
 
   prt_inline void getRay(Ray& ray, const CameraSample& s) const

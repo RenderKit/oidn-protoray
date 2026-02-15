@@ -140,6 +140,16 @@ void DeviceCpu::initCamera(const Props& props, const Props& prevProps, const Pro
   nextCamera = makeCamera(nextProps);
 }
 
+Mat4f DeviceCpu::getWorldToViewD3D()
+{
+  return camera->worldToViewD3D;
+}
+
+Mat4f DeviceCpu::getViewToClipD3D()
+{
+  return camera->viewToClipD3D;
+}
+
 Mat4f DeviceCpu::getWorldToRaster()
 {
   return camera->worldToRaster;

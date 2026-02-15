@@ -36,6 +36,9 @@ public:
   Basis3f basis;
   float nearClip;
   //float farClip;
+
+  Mat4f worldToViewD3D;
+  Mat4f viewToClipD3D;
   Mat4f worldToRaster;
 
   virtual ~Camera() {}

@@ -83,6 +83,8 @@ public:
   // Camera
   virtual void initCamera(const Props& props) = 0;
   virtual void initCamera(const Props& props, const Props& prevProps, const Props& nextProps) = 0;
+  virtual Mat4f getWorldToViewD3D() = 0;
+  virtual Mat4f getViewToClipD3D() = 0;
   virtual Mat4f getWorldToRaster() = 0;
 
   // Jitter

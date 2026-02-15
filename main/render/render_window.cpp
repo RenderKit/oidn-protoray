@@ -24,6 +24,15 @@ using json = nlohmann::json;
 
 inline json toJSON(const Vec2f& v) { return {v.x, v.y}; }
 inline json toJSON(const Vec3f& v) { return {v.x, v.y, v.z}; }
+inline json toJSON(const Vec4f& v) { return {v.x, v.y, v.z, v.w}; }
+
+inline json toJSON(const Mat4f& m)
+{
+  json j = json::array();
+  for (int row = 0; row < 4; ++row)
+    j.push_back(toJSON(Vec4f(m[0][row], m[1][row], m[2][row], m[3][row])));
+  return j;
+}
 
 bool saveJson(const std::string& filename, const json& json)
 {
@@ -1407,6 +1416,9 @@ void RenderWindow::saveScreenshot(const std::string& basename, bool withSequence
     }
 
     jsonImage["sampler"] = device->getSamplerType();
+
+    jsonImage["worldToViewMatrix"] = toJSON(device->getWorldToViewD3D());
+    jsonImage["viewToClipMatrix"]  = toJSON(device->getViewToClipD3D());
 
     json jsonCamera;
     Props camera = makeCamera();

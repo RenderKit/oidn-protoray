@@ -48,6 +48,8 @@ public:
   // Camera
   void initCamera(const Props& props) override;
   void initCamera(const Props& props, const Props& prevProps, const Props& nextProps) override;
+  Mat4f getWorldToViewD3D() override;
+  Mat4f getViewToClipD3D() override;
   Mat4f getWorldToRaster() override;
 
   // Jitter
