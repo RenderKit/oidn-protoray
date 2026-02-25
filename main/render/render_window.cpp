@@ -1427,6 +1427,7 @@ void RenderWindow::saveScreenshot(const std::string& basename, bool withSequence
     jsonCamera["direction"] = toJSON(-cameraBasis.N);
     jsonCamera["up"] = toJSON(cameraBasis.V);
     jsonCamera["right"] = toJSON(cameraBasis.U);
+    jsonCamera["aspectRatio"] = camera.get<float>("width") / camera.get<float>("height");
     jsonCamera["fovY"] = camera.get<float>("fov");
     jsonCamera["lensRadius"] = camera.get<float>("lensRadius");
     jsonCamera["focalDistance"] = camera.get<float>("focalDistance");
