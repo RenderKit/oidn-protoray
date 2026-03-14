@@ -1511,12 +1511,13 @@ void RenderWindow::setActiveView(int id)
   viewId = id;
 
   sequenceKeyframes[0].view = viewSet.views[id];
-  sequenceKeyframes[1].view = viewSet.views2[id];
+  sequenceKeyframes[1].view = viewSet.views2[id] ? viewSet.views2[id] : viewSet.views[id];
 
-  if (!std::isnan(viewSet.lightDirs[id].x))
-    sequenceKeyframes[0].lightDir = viewSet.lightDirs[id];
-  if (!std::isnan(viewSet.lightDirs2[id].x))
-    sequenceKeyframes[1].lightDir = viewSet.lightDirs2[id];
+
+  sequenceKeyframes[0].lightDir = !std::isnan(viewSet.lightDirs[id].x) ? viewSet.lightDirs[id]
+                                                                       : lightDir;
+  sequenceKeyframes[1].lightDir = !std::isnan(viewSet.lightDirs2[id].x) ? viewSet.lightDirs2[id]
+                                                                        : sequenceKeyframes[0].lightDir;
 
   Log() << "Active view: " << viewId;
   setSequenceFrame(sequenceFrameIndex);
