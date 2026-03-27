@@ -655,6 +655,7 @@ void RenderWindow::onRender()
           if (!doneFilename.empty())
           {
             std::ofstream f(doneFilename);
+            f << getElapsedTime(); // save total rendering time in seconds
             Log() << "Done";
           }
         }
