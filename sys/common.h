@@ -73,7 +73,16 @@ private:
 };
 
 template <class T>
-using ResultOfT = typename std::result_of<T>::type;
+struct ResultOfHelper;
+
+template <class F, class... Args>
+struct ResultOfHelper<F(Args...)>
+{
+  using Type = std::invoke_result_t<F, Args...>;
+};
+
+template <class T>
+using ResultOfT = typename ResultOfHelper<T>::Type;
 
 enum class Access
 {
