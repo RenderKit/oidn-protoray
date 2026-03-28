@@ -7,7 +7,9 @@
 #else
   #include <unistd.h>
   #include <sys/resource.h>
-  #if !defined(__APPLE__)
+  #if defined(__APPLE__)
+    #include <sys/sysctl.h>
+  #else
     #include <cpuid.h>
   #endif
 #endif
@@ -29,11 +31,14 @@ const int cpuCount = getCpuCount();
   const std::string cpuIsa = "avx";
 #elif defined(__SSE__)
   const std::string cpuIsa = "sse";
+#elif defined(__ARM_NEON) || defined(__ARM_NEON__)
+  const std::string cpuIsa = "neon";
 #else
   const std::string cpuIsa = "base";
 #endif
 
-#if (defined(__x86_64__) || defined(_M_X64)) && !defined(__APPLE__)
+#if (defined(__x86_64__) || defined(_M_X64))
+#if !defined(__APPLE__)
 prt_inline void cpuid(int cpuInfo[4], int functionID)
 {
 #if defined(_WIN32)
@@ -42,6 +47,7 @@ prt_inline void cpuid(int cpuInfo[4], int functionID)
   __cpuid(functionID, cpuInfo[0], cpuInfo[1], cpuInfo[2], cpuInfo[3]);
 #endif
 }
+#endif
 #endif
 
 int getCpuCount()
@@ -72,7 +78,7 @@ void getCpuInfo(CpuInfo& info)
     info.brand = name;
     return;
   }
-  #else
+#elif defined(__x86_64__) || defined(_M_X64)
   int regs[3][4];
   char name[sizeof(regs)+1] = {};
 
@@ -89,7 +95,7 @@ void getCpuInfo(CpuInfo& info)
       return;
     }
   }
-  #endif
+#endif
 
   info.brand = "Unknown"; // fallback
 }

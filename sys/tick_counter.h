@@ -54,9 +54,15 @@ public:
 #else
   static uint64_t now()
   {
+#if defined(__ARM_NEON) || defined(__ARM_NEON__)
+    uint64_t x;
+    __asm__ volatile ("mrs %0, cntvct_el0" : "=r" (x));
+    return x;
+#else
     uint64_t x;
      __asm__ volatile ("rdtsc" : "=A" (x));
      return x;
+#endif
   }
 #endif
 };

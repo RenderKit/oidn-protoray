@@ -164,6 +164,9 @@ inline uint64_t getRandomSeed64()
 {
   uint64_t seed;
 
+#if defined(__ARM_NEON) || defined(__ARM_NEON__)
+  // No RDSEED equivalent on ARM; fall through to time-based seed
+#else
   // First, try to use RDSEED
   for (int i = 0; i < 100; ++i)
   #if defined(__INTEL_COMPILER)
@@ -172,6 +175,7 @@ inline uint64_t getRandomSeed64()
     if (_rdseed64_step((unsigned long long*)&seed))
   #endif
       return seed;
+#endif
 
   seed = time(0);
   seed = hashToRandom64(seed);

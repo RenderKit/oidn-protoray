@@ -9,7 +9,9 @@ Compilation
 
 Requirements:
 
-- OS: Linux x86-64 only
+- CPU: x86-64, ARM64
+
+- OS: Linux, macOS
 
 - C++17 compiler
 

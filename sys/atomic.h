@@ -52,7 +52,11 @@ prt_inline float atomicAdd(volatile float* ptr, float val)
     newVal.f = oldVal.f + val;
     if (atomicCas((volatile int*)ptr, oldVal.i, newVal.i) == oldVal.i)
       break;
+#if defined(__ARM_NEON) || defined(__ARM_NEON__)
+    __asm__ volatile("yield");
+#else
     _mm_pause();
+#endif
   }
 
   return oldVal.f;

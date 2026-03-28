@@ -5,7 +5,11 @@
 
 #ifdef PRT_GUI_SUPPORT
 #include <SDL2/SDL.h>
+#ifdef __APPLE__
+#include <OpenGL/gl.h>
+#else
 #include <GL/gl.h>
+#endif
 #endif
 
 #include "sys/common.h"

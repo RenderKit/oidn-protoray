@@ -5,12 +5,13 @@
 
 #include <cstddef>
 #include <cstring>
-#include <immintrin.h>
 #include <memory>
 #include "common.h"
 #include "stream.h"
 
-#if defined(__AVX512F__)
+#if defined(__ARM_NEON) || defined(__ARM_NEON__)
+#define PRT_SIMD_REG_SIZE 16  // NEON 128-bit
+#elif defined(__AVX512F__)
 #define PRT_SIMD_REG_SIZE 64 // AVX-512
 #else
 #define PRT_SIMD_REG_SIZE 32 // AVX
@@ -52,40 +53,40 @@ inline void copy(T* dest, const T* src, size_t count)
 
 prt_inline void prefetchL1(const void* data, int offset = 0)
 {
-  _mm_prefetch((const char*)data+offset, _MM_HINT_T0);
+  __builtin_prefetch((const char*)data+offset, 0, 3);
 }
 
 prt_inline void prefetchL2(const void* data, int offset = 0)
 {
-  _mm_prefetch((const char*)data+offset, _MM_HINT_T1);
+  __builtin_prefetch((const char*)data+offset, 0, 2);
 }
 
 prt_inline void prefetchL1Ex(const void* data, int offset = 0)
 {
-  _mm_prefetch((const char*)data+offset, _MM_HINT_T0);
+  __builtin_prefetch((const char*)data+offset, 1, 3);
 }
 
 prt_inline void prefetchL2Ex(const void* data, int offset = 0)
 {
-  _mm_prefetch((const char*)data+offset, _MM_HINT_T1);
+  __builtin_prefetch((const char*)data+offset, 1, 2);
 }
 
 prt_inline void prefetch2L1(const void* data, int offset = 0)
 {
-  _mm_prefetch((const char*)data+offset,    _MM_HINT_T0);
-  _mm_prefetch((const char*)data+offset+64, _MM_HINT_T0);
+  __builtin_prefetch((const char*)data+offset,    0, 3);
+  __builtin_prefetch((const char*)data+offset+64, 0, 3);
 }
 
 prt_inline void prefetch2L1Ex(const void* data, int offset = 0)
 {
-  _mm_prefetch((const char*)data+offset,    _MM_HINT_T0);
-  _mm_prefetch((const char*)data+offset+64, _MM_HINT_T0);
+  __builtin_prefetch((const char*)data+offset,    1, 3);
+  __builtin_prefetch((const char*)data+offset+64, 1, 3);
 }
 
 prt_inline void prefetch2L2Ex(const void* data, int offset = 0)
 {
-  _mm_prefetch((const char*)data+offset,    _MM_HINT_T1);
-  _mm_prefetch((const char*)data+offset+64, _MM_HINT_T1);
+  __builtin_prefetch((const char*)data+offset,    1, 2);
+  __builtin_prefetch((const char*)data+offset+64, 1, 2);
 }
 
 // Memory object

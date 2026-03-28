@@ -6,6 +6,7 @@
 #include <cassert>
 #include <cstdint>
 #include <cstdio>
+#include <cstring>
 #include <climits>
 #include <memory>
 #include <functional>
@@ -150,15 +151,10 @@ prt_inline bool none(bool a) { return !a; }
 template <class OutType, class InType>
 prt_inline OutType bitwise_cast(const InType& value)
 {
-  union
-  {
-    InType inValue;
-    OutType outValue;
-  }
-  u;
-
-  u.inValue = value;
-  return u.outValue;
+  static_assert(sizeof(InType) == sizeof(OutType), "bitwise_cast: sizes must match");
+  OutType result;
+  memcpy(&result, &value, sizeof(result));
+  return result;
 }
 
 } // namespace prt

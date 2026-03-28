@@ -19,9 +19,17 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -DDEBUG")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-g ${CMAKE_CXX_FLAGS_RELEASE}")
 
-set(HOST_ISA "AVX2" CACHE STRING "Instruction set.")
-set_property(CACHE HOST_ISA PROPERTY STRINGS "AVX2" "AVX512")
-if(HOST_ISA STREQUAL "AVX2")
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64|aarch64|ARM64")
+  set(HOST_ISA_DEFAULT "NEON")
+else()
+  set(HOST_ISA_DEFAULT "AVX2")
+endif()
+
+set(HOST_ISA "${HOST_ISA_DEFAULT}" CACHE STRING "Instruction set.")
+set_property(CACHE HOST_ISA PROPERTY STRINGS "AVX2" "AVX512" "NEON")
+if(HOST_ISA STREQUAL "NEON")
+  set(HOST_CXX_FLAGS "") # NEON is enabled by default on AArch64
+elseif(HOST_ISA STREQUAL "AVX2")
   if(CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
     set(HOST_CXX_FLAGS "-xCORE-AVX2")
   else()
@@ -324,6 +332,7 @@ set(SOURCES
   math/math_common.h
   math/math.h
   math/math_avx2.h
+  math/math_neon.h
   math/random.h
   math/simd_common.cpp
   math/simd_common.h
@@ -346,6 +355,14 @@ set(SOURCES
   math/simd/vbool16_avx512.h
   math/simd/vbool4_avx.h
   math/simd/vbool8_avx.h
+  math/simd/vfloat4_neon.h
+  math/simd/vfloat8_neon.h
+  math/simd/vint4_neon.h
+  math/simd/vint8_neon.h
+  math/simd/vuint4_neon.h
+  math/simd/vuint8_neon.h
+  math/simd/vbool4_neon.h
+  math/simd/vbool8_neon.h
   core/intersector.h
   core/intersector_single.h
   core/intersector_packet.h
@@ -389,7 +406,9 @@ if(PRT_OIDN_SUPPORT)
 endif()
 
 add_executable(protoray ${SOURCES})
-set_target_properties(protoray PROPERTIES COMPILE_FLAGS ${HOST_CXX_FLAGS})
+if(HOST_CXX_FLAGS)
+  set_target_properties(protoray PROPERTIES COMPILE_FLAGS ${HOST_CXX_FLAGS})
+endif()
 if(NOT APPLE)
   target_link_libraries(protoray rt)
 endif()

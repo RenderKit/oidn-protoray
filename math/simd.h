@@ -6,12 +6,16 @@
 
 #include "simd_common.h"
 
+#if defined(__ARM_NEON) || defined(__ARM_NEON__)
+#include "simd/vfloat4_neon.h"
+#include "simd/vfloat8_neon.h"
+#else
 #if defined(__AVX512F__)
 #include "simd/vfloat16_avx512.h"
 #endif
-
 #include "simd/vfloat4_avx.h"
 #include "simd/vfloat8_avx2.h"
+#endif
 
 namespace prt {
 

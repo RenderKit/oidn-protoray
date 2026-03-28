@@ -11,6 +11,9 @@ namespace prt {
 #if defined(__AVX512F__)
 #define PRT_SIMD_SIZE 16
 const int simdSize = 16;
+#elif defined(__ARM_NEON) || defined(__ARM_NEON__)
+#define PRT_SIMD_SIZE 8
+const int simdSize = 8;
 #else
 #define PRT_SIMD_SIZE 8
 const int simdSize = 8;

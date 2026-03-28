@@ -6,7 +6,11 @@
 
 #include "sys/constants.h"
 #include "math_common.h"
+#if defined(__ARM_NEON) || defined(__ARM_NEON__)
+#include "math_neon.h"
+#else
 #include "math_avx2.h"
+#endif
 
 namespace prt {
 
@@ -158,6 +162,8 @@ prt_inline int bitTestAndComplement(int value, int index)
   long r = value;
   _bittestandcomplement(&r, index);
   return r;
+#elif defined(__ARM_NEON) || defined(__ARM_NEON__)
+  return value ^ (1 << index);
 #else
   int r = 0;
   asm("btc %1,%0" : "=r"(r) : "r"(index), "0"(value) : "flags");
@@ -279,7 +285,12 @@ prt_inline int toIntSafe(float x)
 
 prt_inline uint16_t toHalf(float x)
 {
+#if defined(__ARM_NEON) || defined(__ARM_NEON__)
+  float16_t h = (float16_t)x;
+  return bitwise_cast<uint16_t>(h);
+#else
   return _cvtss_sh(x, _MM_FROUND_CUR_DIRECTION);
+#endif
 }
 
 // Reduction functions
