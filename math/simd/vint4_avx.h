@@ -64,7 +64,7 @@ prt_inline vint4 load(const vbool4& mask, const int* ptr)
 {
   vint4 r;
   for (int i = 0; i < 4; ++i)
-    if (mask[i]) r[i] = ptr[i];
+    r[i] = mask[i] ? ptr[i] : 0;
   return r;
 }
 
@@ -86,7 +86,7 @@ prt_inline vint4 gather(const vbool4& mask, const int* ptr, const vint4& idx)
 {
   vint4 r;
   for (int i = 0; i < 4; ++i)
-    if (mask[i]) r[i] = ptr[idx[i]];
+    r[i] = mask[i] ? ptr[idx[i]] : 0;
   return r;
 }
 

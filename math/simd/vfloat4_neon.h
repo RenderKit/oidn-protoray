@@ -68,8 +68,10 @@ prt_inline vfloat4 load(const float* ptr)
 template <>
 prt_inline vfloat4 load(const vbool4& mask, const float* ptr)
 {
-  float32x4_t val = vld1q_f32(ptr);
-  return vreinterpretq_f32_u32(vandq_u32(mask.m, vreinterpretq_u32_f32(val)));
+  vfloat4 r;
+  for (int i = 0; i < 4; ++i)
+    r[i] = mask[i] ? ptr[i] : 0.0f;
+  return r;
 }
 
 prt_inline vfloat4 gather(const float* ptr, const vint4& idx)

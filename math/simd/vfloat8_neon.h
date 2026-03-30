@@ -81,9 +81,9 @@ prt_inline vfloat8 load(const float* ptr)
 template <>
 prt_inline vfloat8 load(const vbool8& mask, const float* ptr)
 {
-  vfloat8 r(zero);
+  vfloat8 r;
   for (int i = 0; i < 8; ++i)
-    if (mask[i]) r[i] = ptr[i];
+    r[i] = mask[i] ? ptr[i] : 0.0f;
   return r;
 }
 
@@ -96,9 +96,9 @@ prt_inline vfloat8 loadu(const float* ptr)
 template <>
 prt_inline vfloat8 loadu(const vbool8& mask, const float* ptr)
 {
-  vfloat8 r(zero);
+  vfloat8 r;
   for (int i = 0; i < 8; ++i)
-    if (mask[i]) r[i] = ptr[i];
+    r[i] = mask[i] ? ptr[i] : 0.0f;
   return r;
 }
 
@@ -121,9 +121,9 @@ prt_inline vfloat8 gather(const float* ptr, const vint8& idx)
 
 prt_inline vfloat8 gather(const vbool8& mask, const float* ptr, const vint8& idx)
 {
-  vfloat8 r(zero);
+  vfloat8 r;
   for (int i = 0; i < 8; ++i)
-    if (mask[i]) r[i] = ptr[idx[i]];
+    r[i] = mask[i] ? ptr[idx[i]] : 0.0f;
   return r;
 }
 

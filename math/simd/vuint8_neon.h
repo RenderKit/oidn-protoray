@@ -80,7 +80,7 @@ prt_inline vuint8 load(const vbool8& mask, const uint* ptr)
 {
   vuint8 r;
   for (int i = 0; i < 8; ++i)
-    if (mask[i]) r[i] = ptr[i];
+    r[i] = mask[i] ? ptr[i] : 0;
   return r;
 }
 
@@ -95,7 +95,7 @@ prt_inline vuint8 loadu(const vbool8& mask, const uint* ptr)
 {
   vuint8 r;
   for (int i = 0; i < 8; ++i)
-    if (mask[i]) r[i] = ptr[i];
+    r[i] = mask[i] ? ptr[i] : 0;
   return r;
 }
 
@@ -118,9 +118,9 @@ prt_inline vuint8 gather(const uint* ptr, const vint8& idx)
 
 prt_inline vuint8 gather(const vbool8& mask, const uint* ptr, const vint8& idx)
 {
-  vuint8 r(zero);
+  vuint8 r;
   for (int i = 0; i < 8; ++i)
-    if (mask[i]) r[i] = ptr[idx[i]];
+    r[i] = mask[i] ? ptr[idx[i]] : 0;
   return r;
 }
 
