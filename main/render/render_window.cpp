@@ -138,6 +138,8 @@ RenderWindow::RenderWindow(int width, int height, DisplayMode mode, const std::s
   sharpness = -1.f;
 
   sequenceFrameCount = max(props.get("sequence", 1), 1);
+  sequenceViewBeginFrameIndex = 0;
+  sequenceViewEndFrameIndex = sequenceFrameCount;
   sequenceFrameIndex = 0;
   isSequencePlaying = false;
 
@@ -1727,6 +1729,27 @@ void RenderWindow::mutate()
                   rotPitch = (rng.get1f() < 0.7f) ? rng.getTruncNorm1f(0.f, 0.15f, -5.f, 5.f) * rotScale : 0.f;
                   rotRoll  = (rng.get1f() < 0.3f) ? rng.getTruncNorm1f(0.f, 0.10f, -5.f, 5.f) * rotScale : 0.f;
                 }
+
+                // Randomly clamp the camera animation
+                const float clampView = rng.get1f();
+                if (sequenceFrameCount >= 3 && clampView <= 0.17f)
+                {
+                  // Clamp only the beginning
+                  sequenceViewBeginFrameIndex = rng.get1i(1, sequenceFrameCount-2);
+                  sequenceViewEndFrameIndex   = sequenceFrameCount;
+                }
+                else if (sequenceFrameCount >= 3 && clampView <= 0.2f)
+                {
+                  // Clamp only the end
+                  sequenceViewBeginFrameIndex = 0;
+                  sequenceViewEndFrameIndex   = rng.get1i(1, sequenceFrameCount-2);
+                }
+                else
+                {
+                  // Don't clamp
+                  sequenceViewBeginFrameIndex = 0;
+                  sequenceViewEndFrameIndex   = sequenceFrameCount;
+                }
               }
               else
               {
@@ -2244,14 +2267,16 @@ RenderWindow::Keyframe RenderWindow::getSequenceFrame(int i)
   const Keyframe& key1 = sequenceKeyframes[1];
 
   // Interpolate the view
+  const float tView = clamp(i, sequenceViewBeginFrameIndex, sequenceViewEndFrameIndex) / float(sequenceFrameCount - 1);
+
   View& v = f.view;
-  v.pos    = lerp(key0.view.pos,    key1.view.pos,    t);
-  v.yaw    = lerp(key0.view.yaw,    key1.view.yaw,    t);
-  v.pitch  = lerp(key0.view.pitch,  key1.view.pitch,  t);
-  v.roll   = lerp(key0.view.roll,   key1.view.roll,   t);
-  v.fovY   = lerp(key0.view.fovY,   key1.view.fovY,   t);
-  v.focus  = lerp(key0.view.focus,  key1.view.focus,  t);
-  v.radius = lerp(key0.view.radius, key1.view.radius, t);
+  v.pos    = lerp(key0.view.pos,    key1.view.pos,    tView);
+  v.yaw    = lerp(key0.view.yaw,    key1.view.yaw,    tView);
+  v.pitch  = lerp(key0.view.pitch,  key1.view.pitch,  tView);
+  v.roll   = lerp(key0.view.roll,   key1.view.roll,   tView);
+  v.fovY   = lerp(key0.view.fovY,   key1.view.fovY,   tView);
+  v.focus  = lerp(key0.view.focus,  key1.view.focus,  tView);
+  v.radius = lerp(key0.view.radius, key1.view.radius, tView);
 
   // Interpolate the light
   f.lightDir = slerp(key0.lightDir, key1.lightDir, t);

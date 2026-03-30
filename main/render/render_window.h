@@ -98,6 +98,8 @@ private:
   };
 
   Keyframe sequenceKeyframes[2];
+  int sequenceViewBeginFrameIndex;
+  int sequenceViewEndFrameIndex;
   int sequenceFrameIndex;
   int sequenceFrameCount;
   bool isSequencePlaying;
