@@ -250,7 +250,6 @@ RenderWindow::RenderWindow(int width, int height, DisplayMode mode, const std::s
 
   deviceInfo = device->getInfo();
   isDemoMode = props.exists("demo");
-  this->buildStats = buildStats;
 
   maxDepth = props.get("maxDepth", 100);
   isSceneChanged = false;
@@ -1614,7 +1613,7 @@ void RenderWindow::mutate()
   const uint64_t id = mutationIndex == 0 ? seed : rng.get1ull();
   mutationIndex++;
   char idString[17];
-  sprintf(idString, "%016lx", id);
+  snprintf(idString, sizeof(idString), "%016lx", id);
   outputId = idString;
   Log() << "Mutation: " << outputId;
 

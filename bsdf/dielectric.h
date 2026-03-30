@@ -63,7 +63,7 @@ public:
     : BsdfSimd(frame, BsdfType::SpecularReflection | BsdfType::SpecularTransmission),
       eta(etaExtInt) {}
 
-  Vec3vf sample(vbool m, const ShadingContextSimd& ctx, const Vec3vf& wo, Vec3vf& wi, vfloat& pdf, vint& type, const BsdfSampleSimd& s) const
+  Vec3vf sample(vbool m, const ShadingContextSimd& ctx, const Vec3vf& wo, Vec3vf& wi, vfloat& pdf, vint& type, const BsdfSampleSimd& s) const override
   {
     vfloat cosThetaO = dot(wo, getN());
     m &= cosThetaO > 0.f;

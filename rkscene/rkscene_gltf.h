@@ -66,7 +66,7 @@ namespace rkscene {
 
         if (byteStride == sizeof(T))
         {
-          std::memcpy(buffer.data(), data.data() + byteOffset, count * sizeof(T));
+          std::memcpy((void*)buffer.data(), data.data() + byteOffset, count * sizeof(T));
         }
         else
         {

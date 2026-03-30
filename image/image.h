@@ -35,13 +35,13 @@ public:
   Image(const Image& other)
   {
     init(other.size);
-    memcpy(data, other.data, size.x * size.y * sizeof(T));
+    memcpy((void*)data, (const void*)other.data, size.x * size.y * sizeof(T));
   }
 
   Image& operator =(const Image& other)
   {
     alloc(other.size);
-    memcpy(data, other.data, size.x * size.y * sizeof(T));
+    memcpy((void*)data, (const void*)other.data, size.x * size.y * sizeof(T));
     return *this;
   }
 
