@@ -100,6 +100,8 @@ private:
   Keyframe sequenceKeyframes[2];
   int sequenceViewBeginFrameIndex;
   int sequenceViewEndFrameIndex;
+  int sequenceLightBeginFrameIndex;
+  int sequenceLightEndFrameIndex;
   int sequenceFrameIndex;
   int sequenceFrameCount;
   bool isSequencePlaying;

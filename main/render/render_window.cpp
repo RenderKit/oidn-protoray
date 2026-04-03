@@ -138,8 +138,10 @@ RenderWindow::RenderWindow(int width, int height, DisplayMode mode, const std::s
   sharpness = -1.f;
 
   sequenceFrameCount = max(props.get("sequence", 1), 1);
-  sequenceViewBeginFrameIndex = 0;
-  sequenceViewEndFrameIndex = sequenceFrameCount;
+  sequenceViewBeginFrameIndex  = 0;
+  sequenceViewEndFrameIndex    = sequenceFrameCount;
+  sequenceLightBeginFrameIndex = 0;
+  sequenceLightEndFrameIndex   = sequenceFrameCount;
   sequenceFrameIndex = 0;
   isSequencePlaying = false;
 
@@ -1730,14 +1732,14 @@ void RenderWindow::mutate()
                 }
 
                 // Randomly clamp the camera animation
-                const float clampView = rng.get1f();
-                if (sequenceFrameCount >= 3 && clampView <= 0.17f)
+                const float clampViewAnim = rng.get1f();
+                if (sequenceFrameCount >= 3 && clampViewAnim <= 0.17f)
                 {
                   // Clamp only the beginning
                   sequenceViewBeginFrameIndex = rng.get1i(1, sequenceFrameCount-2);
                   sequenceViewEndFrameIndex   = sequenceFrameCount;
                 }
-                else if (sequenceFrameCount >= 3 && clampView <= 0.2f)
+                else if (sequenceFrameCount >= 3 && clampViewAnim <= 0.2f)
                 {
                   // Clamp only the end
                   sequenceViewBeginFrameIndex = 0;
@@ -1752,11 +1754,15 @@ void RenderWindow::mutate()
               }
               else
               {
+                // Static camera
                 moveDist = 0.f;
                 moveDir  = zero;
                 rotYaw   = 0.f;
                 rotPitch = 0.f;
                 rotRoll  = 0.f;
+
+                sequenceViewBeginFrameIndex = 0;
+                sequenceViewEndFrameIndex   = sequenceFrameCount;
               }
             }
           }
@@ -1989,6 +1995,33 @@ void RenderWindow::mutate()
 
           if (rng.get1f() < 0.5f)
             std::swap(lightDir, lightDir2);
+
+          // Randomly clamp the camera animation
+          const float clampLightAnim = rng.get1f();
+          if (sequenceFrameCount >= 3 && clampLightAnim <= 0.17f)
+          {
+            // Clamp only the beginning
+            sequenceLightBeginFrameIndex = rng.get1i(1, sequenceFrameCount-2);
+            sequenceLightEndFrameIndex   = sequenceFrameCount;
+          }
+          else if (sequenceFrameCount >= 3 && clampLightAnim <= 0.2f)
+          {
+            // Clamp only the end
+            sequenceLightBeginFrameIndex = 0;
+            sequenceLightEndFrameIndex   = rng.get1i(1, sequenceFrameCount-2);
+          }
+          else
+          {
+            // Don't clamp
+            sequenceLightBeginFrameIndex = 0;
+            sequenceLightEndFrameIndex   = sequenceFrameCount;
+          }
+        }
+        else
+        {
+          // Static light
+          sequenceLightBeginFrameIndex = 0;
+          sequenceLightEndFrameIndex   = sequenceFrameCount;
         }
 
         // Save the keyframes
@@ -2260,8 +2293,6 @@ RenderWindow::Keyframe RenderWindow::getSequenceFrame(int i)
 
   Keyframe f;
 
-  const float t = float(i) / float(sequenceFrameCount - 1);
-
   const Keyframe& key0 = sequenceKeyframes[0];
   const Keyframe& key1 = sequenceKeyframes[1];
 
@@ -2278,7 +2309,8 @@ RenderWindow::Keyframe RenderWindow::getSequenceFrame(int i)
   v.radius = lerp(key0.view.radius, key1.view.radius, tView);
 
   // Interpolate the light
-  f.lightDir = slerp(key0.lightDir, key1.lightDir, t);
+  const float tLight = clamp(i, sequenceLightBeginFrameIndex, sequenceLightEndFrameIndex) / float(sequenceFrameCount - 1);
+  f.lightDir = slerp(key0.lightDir, key1.lightDir, tLight);
 
   return f;
 }
