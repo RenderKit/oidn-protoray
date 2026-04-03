@@ -1733,13 +1733,13 @@ void RenderWindow::mutate()
 
                 // Randomly clamp the camera animation
                 const float clampViewAnim = rng.get1f();
-                if (sequenceFrameCount >= 3 && clampViewAnim <= 0.17f)
+                if (sequenceFrameCount >= 3 && clampViewAnim < 0.2f)
                 {
                   // Clamp only the beginning
                   sequenceViewBeginFrameIndex = rng.get1i(1, sequenceFrameCount-2);
                   sequenceViewEndFrameIndex   = sequenceFrameCount;
                 }
-                else if (sequenceFrameCount >= 3 && clampViewAnim <= 0.2f)
+                else if (sequenceFrameCount >= 3 && clampViewAnim < 0.25f)
                 {
                   // Clamp only the end
                   sequenceViewBeginFrameIndex = 0;
@@ -1986,7 +1986,7 @@ void RenderWindow::mutate()
         // Generate another light direction for the last keyframe of the sequence
         Vec3f lightDir2 = lightDir;
 
-        if (rng.get1f() < 0.7f)
+        if (rng.get1f() < 0.65f)
         {
           const float theta = degToRad(1.f) * rng.getTruncNorm1f(0.f, 0.15f, -10.f, 10.f) * sequenceFrameCount;
           const float phi   = rng.get1f() * (2.f*float(pi));
@@ -1998,13 +1998,13 @@ void RenderWindow::mutate()
 
           // Randomly clamp the camera animation
           const float clampLightAnim = rng.get1f();
-          if (sequenceFrameCount >= 3 && clampLightAnim <= 0.17f)
+          if (sequenceFrameCount >= 3 && clampLightAnim < 0.2f)
           {
             // Clamp only the beginning
             sequenceLightBeginFrameIndex = rng.get1i(1, sequenceFrameCount-2);
             sequenceLightEndFrameIndex   = sequenceFrameCount;
           }
-          else if (sequenceFrameCount >= 3 && clampLightAnim <= 0.2f)
+          else if (sequenceFrameCount >= 3 && clampLightAnim < 0.25f)
           {
             // Clamp only the end
             sequenceLightBeginFrameIndex = 0;
