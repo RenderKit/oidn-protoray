@@ -49,8 +49,8 @@ struct FrameAovs
   float* roughness1 = nullptr;
   float* alpha = nullptr;
   Vec3f* sh[4] = {nullptr, nullptr, nullptr, nullptr};
-  Vec2f* motionBack = nullptr;
-  Vec2f* motionFore = nullptr;
+  Vec3f* motionBack = nullptr;
+  Vec3f* motionFore = nullptr;
 };
 
 class Device

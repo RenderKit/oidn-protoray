@@ -52,8 +52,8 @@ private:
   Image1f roughness1Buffer;
   Image1f alphaBuffer;
   Image3f shBuffer[4];
-  Image2f motionBackBuffer;
-  Image2f motionForeBuffer;
+  Image3f motionBackBuffer;
+  Image3f motionForeBuffer;
   Image3f denoiseBuffer;
 
   int aovId;

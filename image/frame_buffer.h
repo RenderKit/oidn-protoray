@@ -34,8 +34,8 @@ private:
   AccumBuffer1f roughness1;      // first-hit linear roughness
   AccumBuffer1f alpha;           // alpha opacity
   AccumBuffer3f sh[4];           // L1 SH coefficients
-  AccumBuffer2f motionBack;      // backward motion vector
-  AccumBuffer2f motionFore;      // forward motion vector
+  AccumBuffer3f motionBack;      // backward motion vector (screen-space xy + linear depth)
+  AccumBuffer3f motionFore;      // forward motion vector (screen-space xy + linear depth)
   std::optional<Vec2f> jitter;   // sub-pixel jitter (0-1)
   std::shared_ptr<PixelFilter> filter;
   PixelFilterMode filterMode;
@@ -66,8 +66,8 @@ public:
   prt_inline AccumBuffer1f& getRoughness1() { return roughness1; }
   prt_inline AccumBuffer1f& getAlpha() { return alpha; }
   prt_inline AccumBuffer3f& getSh(size_t i) { assert(i < 4); return sh[i]; }
-  prt_inline AccumBuffer2f& getMotionBack() { return motionBack; }
-  prt_inline AccumBuffer2f& getMotionFore() { return motionFore; }
+  prt_inline AccumBuffer3f& getMotionBack() { return motionBack; }
+  prt_inline AccumBuffer3f& getMotionFore() { return motionFore; }
 
   prt_inline Vec2i getSize() const { return color.getSize(); }
   prt_inline Vec2f getInvSize() const { return invSize; }

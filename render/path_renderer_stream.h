@@ -381,11 +381,11 @@ private:
 
             // Accumulate the backward motion vector
             if (frameBuffer->getMotionBack())
-              addSample(mAov1, frameBuffer->getMotionBack(), pixel, Vec2vf(zero), pixelSample);
+              addSample(mAov1, frameBuffer->getMotionBack(), pixel, Vec3vf(zero), pixelSample);
 
             // Accumulate the forward motion vector
             if (frameBuffer->getMotionFore())
-              addSample(mAov1, frameBuffer->getMotionFore(), pixel, Vec2vf(zero), pixelSample);
+              addSample(mAov1, frameBuffer->getMotionFore(), pixel, Vec3vf(zero), pixelSample);
           }
 
           // Accumulate other AOVs if not stored yet
@@ -533,19 +533,21 @@ private:
             if (frameBuffer->getAlpha())
               addSample(mAov1, frameBuffer->getAlpha(), pixel, vfloat(1.f), pixelSample);
 
-            // Accumulate the backward motion vector
+            // Accumulate the backward motion vector (screen-space xy + linear depth)
             if (frameBuffer->getMotionBack())
             {
-              Vec3vf pRasterPrev = projPoint(prevCamera->worldToRaster, p);
-              Vec2vf motion = pRasterPrev.xy() - pRaster.xy();
+              Vec4vf pRasterPrev4D = xfmPoint(prevCamera->worldToRaster, p);
+              Vec3vf pRasterPrev = projPoint(pRasterPrev4D);
+              Vec3vf motion(pRasterPrev.x - pRaster.x, pRasterPrev.y - pRaster.y, pRasterPrev4D.w - pRaster4D.w);
               addSample(mAov1, frameBuffer->getMotionBack(), pixel, motion, pixelSample);
             }
 
-            // Accumulate the forward motion vector
+            // Accumulate the forward motion vector (screen-space xy + linear depth)
             if (frameBuffer->getMotionFore())
             {
-              Vec3vf pRasterNext = projPoint(nextCamera->worldToRaster, p);
-              Vec2vf motion = pRasterNext.xy() - pRaster.xy();
+              Vec4vf pRasterNext4D = xfmPoint(nextCamera->worldToRaster, p);
+              Vec3vf pRasterNext = projPoint(pRasterNext4D);
+              Vec3vf motion(pRasterNext.x - pRaster.x, pRasterNext.y - pRaster.y, pRasterNext4D.w - pRaster4D.w);
               addSample(mAov1, frameBuffer->getMotionFore(), pixel, motion, pixelSample);
             }
           }
@@ -794,19 +796,21 @@ private:
                 if (frameBuffer->getAlpha())
                   addSample(mAov1, frameBuffer->getAlpha(), pixel, vfloat(1.f), pixelSample);
 
-                // Accumulate the backward motion vector
+                // Accumulate the backward motion vector (screen-space xy + linear depth)
                 if (frameBuffer->getMotionBack())
                 {
-                  Vec3vf pRasterPrev = projPoint(prevCamera->worldToRaster, ctx.p);
-                  Vec2vf motion = pRasterPrev.xy() - pRaster.xy();
+                  Vec4vf pRasterPrev4D = xfmPoint(prevCamera->worldToRaster, ctx.p);
+                  Vec3vf pRasterPrev = projPoint(pRasterPrev4D);
+                  Vec3vf motion(pRasterPrev.x - pRaster.x, pRasterPrev.y - pRaster.y, pRasterPrev4D.w - pRaster4D.w);
                   addSample(mAov1, frameBuffer->getMotionBack(), pixel, motion, pixelSample);
                 }
 
-                // Accumulate the forward motion vector
+                // Accumulate the forward motion vector (screen-space xy + linear depth)
                 if (frameBuffer->getMotionFore())
                 {
-                  Vec3vf pRasterNext = projPoint(nextCamera->worldToRaster, ctx.p);
-                  Vec2vf motion = pRasterNext.xy() - pRaster.xy();
+                  Vec4vf pRasterNext4D = xfmPoint(nextCamera->worldToRaster, ctx.p);
+                  Vec3vf pRasterNext = projPoint(pRasterNext4D);
+                  Vec3vf motion(pRasterNext.x - pRaster.x, pRasterNext.y - pRaster.y, pRasterNext4D.w - pRaster4D.w);
                   addSample(mAov1, frameBuffer->getMotionFore(), pixel, motion, pixelSample);
                 }
 
