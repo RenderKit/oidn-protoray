@@ -1408,7 +1408,6 @@ void RenderWindow::saveScreenshot(const std::string& basename, bool withSequence
 
     if (device->hasJitter())
     {
-      jsonImage["jitter"] = toJSON(device->getJitter());
       jsonImage["jitterOffset"] = toJSON(0.5f - device->getJitter());
     }
     else
@@ -1421,26 +1420,25 @@ void RenderWindow::saveScreenshot(const std::string& basename, bool withSequence
 
     jsonImage["sampler"] = device->getSamplerType();
 
+    Props camera = makeCamera();
+    Basis3f cameraBasis = camera.get<Basis3f>("basis");
+    jsonImage["cameraPosition"] = toJSON(camera.get<Vec3f>("position"));
+    jsonImage["cameraForward"] = toJSON(-cameraBasis.N);
+    jsonImage["cameraUp"] = toJSON(cameraBasis.V);
+    jsonImage["cameraRight"] = toJSON(cameraBasis.U);
+    jsonImage["cameraAspectRatio"] = camera.get<float>("width") / camera.get<float>("height");
+    jsonImage["cameraFovVertical"] = camera.get<float>("fov");
+    jsonImage["cameraLensRadius"] = camera.get<float>("lensRadius");
+    jsonImage["cameraFocalDistance"] = camera.get<float>("focalDistance");
+    jsonImage["cameraNear"] = camera.get<float>("nearClip");
+
     jsonImage["worldToViewMatrix"] = toJSON(device->getWorldToViewD3D());
     jsonImage["viewToClipMatrix"]  = toJSON(device->getViewToClipD3D());
 
-    json jsonCamera;
-    Props camera = makeCamera();
-    Basis3f cameraBasis = camera.get<Basis3f>("basis");
-    jsonCamera["position"] = toJSON(camera.get<Vec3f>("position"));
-    jsonCamera["direction"] = toJSON(-cameraBasis.N);
-    jsonCamera["up"] = toJSON(cameraBasis.V);
-    jsonCamera["right"] = toJSON(cameraBasis.U);
-    jsonCamera["aspectRatio"] = camera.get<float>("width") / camera.get<float>("height");
-    jsonCamera["fovY"] = camera.get<float>("fov");
-    jsonCamera["lensRadius"] = camera.get<float>("lensRadius");
-    jsonCamera["focalDistance"] = camera.get<float>("focalDistance");
-    jsonCamera["nearClip"] = camera.get<float>("nearClip");
-
-    jsonImage["camera"] = jsonCamera;
     jsonImage["sceneScale"] = sceneScale;
     jsonImage["exposure"] = exp2(tone.ev) / hdrScale;
     jsonImage["maxPathDepth"] = props.get("maxDepth", maxDepth);
+    jsonImage["samplesPerPixel"] = spp;
 
     if (!jsonImage.empty())
       saveJsonSafe(basename + suffix + ".json", jsonImage);
