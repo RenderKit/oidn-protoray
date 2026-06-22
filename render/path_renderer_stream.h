@@ -369,7 +369,7 @@ private:
 
             // Accumulate the depth
             if (frameBuffer->getDepth())
-              addSample(mAov1, frameBuffer->getDepth(), pixel, zero, pixelSample);
+              addSample(mAov1, frameBuffer->getDepth(), pixel, vfloat(posInf), pixelSample);
 
             // Accumulate the HW depth
             if (frameBuffer->getHWDepth())
