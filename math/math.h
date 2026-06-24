@@ -313,15 +313,15 @@ prt_inline T reduceAdd(const T& x) { return x; }
 
 inline float halton(int base, int index)
 {
-  float result = 0.f;
-  float f = 1.f;
+  double result = 0.;
+  double f = 1.;
   while (index > 0)
   {
-    f = f / float(base);
-    result += f * float(index % base);
+    f = f / double(base);
+    result += f * double(index % base);
     index = index / base;
   }
-  return result;
+  return float(result);
 }
 
 } // namespace prt
