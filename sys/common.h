@@ -3,6 +3,41 @@
 
 #pragma once
 
+// Windows
+// -------
+// <Windows.h> is pulled in here, before anything else, so that the macros it
+// leaks into the global namespace can be cleaned up in a single place.
+#if defined(_WIN32)
+  #ifndef WIN32_LEAN_AND_MEAN
+    #define WIN32_LEAN_AND_MEAN
+  #endif
+  #ifndef NOMINMAX
+    #define NOMINMAX
+  #endif
+  #include <Windows.h>
+
+  // None of these are used in this project, but they do collide with identifiers
+  // that are (Ray::near, Ray::far, GLTFAlphaMode::OPAQUE, ...)
+  #undef near
+  #undef far
+  #undef min
+  #undef max
+  #undef ERROR
+  #undef OPAQUE
+  #undef TRANSPARENT
+  #undef DIFFERENCE
+  #undef RGB
+  #undef small
+  #undef interface
+  #undef Yield
+
+  // Some Windows headers still spell pointers as "T FAR *", so keep these working
+  #undef NEAR
+  #undef FAR
+  #define NEAR
+  #define FAR
+#endif
+
 #include <cassert>
 #include <cstdint>
 #include <cstdio>
@@ -42,6 +77,11 @@
 #else
 #define LIKELY(expr) __builtin_expect(expr,true)
 #define UNLIKELY(expr) __builtin_expect(expr,false)
+#endif
+
+// MSVC's traditional preprocessor has no __has_builtin
+#ifndef __has_builtin
+#define __has_builtin(x) 0
 #endif
 
 #define __STDC_LIMIT_MACROS

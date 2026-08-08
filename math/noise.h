@@ -62,10 +62,10 @@ prt_inline T smoothNoise1f(const Vec3<T>& x)
     T vy[4];
 
     for (int y = -1; y <= 2; ++y)
-      vy[y+1] = catmullRom(cellNoise1f(p+Vec3<T>(-1.f, y, z)),
-                           cellNoise1f(p+Vec3<T>(0.f, y, z)),
-                           cellNoise1f(p+Vec3<T>(1.f, y, z)),
-                           cellNoise1f(p+Vec3<T>(2.f, y, z)), f.x);
+      vy[y+1] = catmullRom(cellNoise1f(p+Vec3<T>(-1.f, (float)y, (float)z)),
+                           cellNoise1f(p+Vec3<T>(0.f, (float)y, (float)z)),
+                           cellNoise1f(p+Vec3<T>(1.f, (float)y, (float)z)),
+                           cellNoise1f(p+Vec3<T>(2.f, (float)y, (float)z)), f.x);
 
     vz[z+1] = catmullRom(vy[0], vy[1], vy[2], vy[3], f.y);
   }
@@ -86,10 +86,10 @@ prt_inline Vec3<T> smoothNoise3f(const Vec3<T>& x)
     Vec3<T> vy[4];
 
     for (int y = -1; y <= 2; ++y)
-      vy[y+1] = catmullRom(cellNoise3f(p+Vec3<T>(-1.f, y, z)),
-                           cellNoise3f(p+Vec3<T>(0.f, y, z)),
-                           cellNoise3f(p+Vec3<T>(1.f, y, z)),
-                           cellNoise3f(p+Vec3<T>(2.f, y, z)), f.x);
+      vy[y+1] = catmullRom(cellNoise3f(p+Vec3<T>(-1.f, (float)y, (float)z)),
+                           cellNoise3f(p+Vec3<T>(0.f, (float)y, (float)z)),
+                           cellNoise3f(p+Vec3<T>(1.f, (float)y, (float)z)),
+                           cellNoise3f(p+Vec3<T>(2.f, (float)y, (float)z)), f.x);
 
     vz[z+1] = catmullRom(vy[0], vy[1], vy[2], vy[3], f.y);
   }

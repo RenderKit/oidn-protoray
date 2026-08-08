@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "config.h"
+#include "main/config.h" // generated into the build tree
 
 namespace prt {
 

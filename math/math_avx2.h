@@ -56,7 +56,19 @@ prt_inline unsigned int bitScan(uint32_t x, unsigned int prevPos)
   return bitScan(xt) + startPos;
 }
 
-#ifdef NDEBUG // FIXME: GCC workaround for "impossible constraint in asm"
+#if defined(_MSC_VER) // MSVC has no inline asm on x64, but does have the SHRD/SHLD intrinsics
+prt_inline void shiftRight128(uint64_t& low, uint64_t& high, int count)
+{
+  low = __shiftright128(low, high, (unsigned char)count);
+  high >>= count;
+}
+
+prt_inline void shiftLeft128(uint64_t& low, uint64_t& high, int count)
+{
+  high = __shiftleft128(low, high, (unsigned char)count);
+  low <<= count;
+}
+#elif defined(NDEBUG) // FIXME: GCC workaround for "impossible constraint in asm"
 prt_inline void shiftRight128(uint64_t& low, uint64_t& high, int count)
 {
   asm("shrd %2,%1,%0" : "=r"(low) : "r"(high), "J"(count), "0"(low) : "flags");

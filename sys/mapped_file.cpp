@@ -178,7 +178,7 @@ void MappedFile::init()
 #ifdef _WIN32
   // Windows
   fileHandle = INVALID_HANDLE_VALUE;
-  mappingHandle = INVALID_HANDLE_VALUE;
+  mappingHandle = NULL; // CreateFileMapping returns NULL on failure, not INVALID_HANDLE_VALUE
 #else
   // Linux
   fileHandle = -1;
@@ -252,10 +252,10 @@ void MappedFile::unmap()
     data = 0;
   }
 
-  if (mappingHandle != INVALID_HANDLE_VALUE)
+  if (mappingHandle != NULL)
   {
     CloseHandle(mappingHandle);
-    mappingHandle = INVALID_HANDLE_VALUE;
+    mappingHandle = NULL;
   }
 #else
   // Linux

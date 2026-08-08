@@ -183,6 +183,8 @@ bool Window::initDisplayWindow()
 #ifdef PRT_GUI_SUPPORT
   Log() << "Creating window";
 
+  SDL_SetMainReady(); // we use our own main() (see SDL_MAIN_HANDLED in window.h)
+
   if (SDL_Init(SDL_INIT_VIDEO) != 0)
   {
     LogError() << "Could not initialize SDL";

@@ -288,7 +288,7 @@ void Scene::loadScene(const std::string& path, const Props& props, MaterialFacto
         geom = mesh;
         geomMap[inGeomId] = geom;
 
-        mesh->alloc(inGeom->getNumPrimitives(), inGeom->positions.size(), !inGeom->normals.empty(),
+        mesh->alloc(static_cast<int>(inGeom->getNumPrimitives()), static_cast<int>(inGeom->positions.size()), !inGeom->normals.empty(),
                     static_cast<int>(inGeom->texcoords.size()), false);
 
         int materialId = materialMap[-1]; // default material
@@ -332,7 +332,7 @@ void Scene::loadScene(const std::string& path, const Props& props, MaterialFacto
 
       int inMatId = inScene->geometries[inGeomId]->material;
       if (inMatId >= 0)
-        isEmissive |= materials[materialMap[inMatId]]->getType() & MaterialType::Emissive;
+        isEmissive |= (materials[materialMap[inMatId]]->getType() & MaterialType::Emissive) != 0;
     }
 
     if (inObj->instances.empty())

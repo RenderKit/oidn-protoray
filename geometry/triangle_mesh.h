@@ -41,6 +41,10 @@ struct TriangleMesh : public Geometry
   prt_inline int getPrimCount() const { return indices.getSize(); }
   prt_inline int getVertexCount() const { return vertexCount; }
 
+  // A mesh may have no texture coordinates at all, in which case texcoords is empty
+  prt_inline int getTexcoordCount() const { return static_cast<int>(texcoords.size()); }
+  prt_inline bool hasTexcoords() const { return !texcoords.empty() && texcoords[0] != nullptr; }
+
   prt_inline Vec3f getPosition(int i) const { return *(const Vec3f*)(vertexAttribs.getData() + (size_t)i*vertexStride); }
   prt_inline Vec3f getNormal  (int i) const { return *(const Vec3f*)(normals   + (size_t)i*vertexStride); }
   prt_inline Vec2f getTexcoord(int t, int i) const { return *(const Vec2f*)(texcoords[t] + (size_t)i*vertexStride); }
@@ -103,7 +107,7 @@ struct TriangleMesh : public Geometry
                     getPosition(indices[i][2]));
   }
 
-  prt_inline Box3f getBounds() override;
+  Box3f getBounds() override;
   prt_inline const Array<std::string>& getMaterialNames() const { return materialNames; }
 
   void postIntersect(const Ray& ray, const Hit& hit, ShadingContext& ctx, int level) const override;

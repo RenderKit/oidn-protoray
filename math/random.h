@@ -52,9 +52,9 @@ public:
   {
     const uint64_t oldState = state;
     next();
-    const uint32_t xorShifted = ((oldState >> 18) ^ oldState) >> 27;
-    const uint32_t rot = oldState >> 59;
-    return (xorShifted >> rot) | (xorShifted << ((-rot) & 31));
+    const uint32_t xorShifted = (uint32_t)(((oldState >> 18) ^ oldState) >> 27);
+    const uint32_t rot = (uint32_t)(oldState >> 59);
+    return (xorShifted >> rot) | (xorShifted << ((0u - rot) & 31));
   }
 
   prt_inline int get1i()
@@ -102,7 +102,7 @@ public:
     //
     // because this version will calculate the same modulus, but the LHS
     // value is less than 2^32.
-    const uint32_t threshold = -bound % bound;
+    const uint32_t threshold = (0u - bound) % bound;
 
     // Uniformity guarantees that this loop will terminate.  In practice, it
     // should usually terminate quickly; on average (assuming all bounds are

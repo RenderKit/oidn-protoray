@@ -1,7 +1,7 @@
 ## Copyright 2015 Intel Corporation
 ## SPDX-License-Identifier: Apache-2.0
 
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.16)
 
 project(protoray)
 
@@ -16,9 +16,46 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
 # Compiler
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
-set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -DDEBUG")
-set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-g ${CMAKE_CXX_FLAGS_RELEASE}")
+
+# CMake sets MSVC for every compiler targeting the MSVC ABI, but only cl.exe and
+# clang-cl take MSVC-style flags: clang++/DPC++ on Windows wants GNU-style ones.
+if(MSVC AND NOT CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
+  set(PRT_MSVC_CLI TRUE)
+else()
+  set(PRT_MSVC_CLI FALSE)
+endif()
+
+if(PRT_MSVC_CLI)
+  # MSVC brings its own optimization defaults, so only add what the code needs
+  # on top of them.
+  add_compile_options(
+    /bigobj      # the template-heavy renderers blow past the default section limit
+    /permissive- # conformance mode; the code is written against GCC/Clang
+    /Zc:__cplusplus
+    /utf-8
+    /wd4068      # unknown pragma (#pragma unroll / #pragma nounroll)
+  )
+  # CMake's MSVC Debug config defines _DEBUG, but the code tests for DEBUG
+  add_compile_definitions($<$<CONFIG:Debug>:DEBUG>)
+else()
+  # Append rather than replace. On Windows these defaults carry clang's C runtime
+  # selection (-D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd); dropping it
+  # leaves the link with no CRT at all.
+  string(APPEND CMAKE_CXX_FLAGS_RELEASE " -O3")
+  string(APPEND CMAKE_CXX_FLAGS_RELWITHDEBINFO " -g -O3")
+  string(APPEND CMAKE_CXX_FLAGS_DEBUG " -g -O0 -DDEBUG")
+endif()
+
+if(WIN32)
+  # These apply to every Windows compiler, not just cl.exe
+  add_compile_definitions(
+    # Windows headers are pulled in by <Windows.h>, Embree, SDL2 and OpenImageIO
+    NOMINMAX
+    WIN32_LEAN_AND_MEAN
+    # The CRT's _s replacements for fopen/sscanf/strcpy/... are not portable
+    _CRT_SECURE_NO_WARNINGS
+  )
+endif()
 
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64|aarch64|ARM64")
   set(HOST_ISA_DEFAULT "NEON")
@@ -31,13 +68,17 @@ set_property(CACHE HOST_ISA PROPERTY STRINGS "AVX2" "AVX512" "NEON")
 if(HOST_ISA STREQUAL "NEON")
   set(HOST_CXX_FLAGS "") # NEON is enabled by default on AArch64
 elseif(HOST_ISA STREQUAL "AVX2")
-  if(CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
+  if(PRT_MSVC_CLI)
+    set(HOST_CXX_FLAGS "/arch:AVX2") # implies F16C, FMA, LZCNT, BMI1/2; MSVC gates no intrinsic on RDSEED
+  elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
     set(HOST_CXX_FLAGS "-xCORE-AVX2")
   else()
     set(HOST_CXX_FLAGS "-mf16c -mavx2 -mfma -mlzcnt -mbmi -mbmi2 -mrdseed") # AVX2 + RDSEED
   endif()
 elseif(HOST_ISA STREQUAL "AVX512")
-  if(CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
+  if(PRT_MSVC_CLI)
+    set(HOST_CXX_FLAGS "/arch:AVX512")
+  elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
     set(HOST_CXX_FLAGS "-xCORE-AVX512")
   else()
     set(HOST_CXX_FLAGS "-mavx512f -mavx512dq -mavx512cd -mavx512bw -mavx512vl -mf16c -mavx2 -mfma -mlzcnt -mbmi -mbmi2 -mrdseed")
@@ -51,22 +92,52 @@ endif()
 include_directories(${PROJECT_SOURCE_DIR})
 
 # TBB
-find_package(TBB REQUIRED)
+# oneTBB ships its own config (and vcpkg only ships that); the bundled FindTBB
+# module is the fallback for installations that predate it.
+find_package(TBB CONFIG QUIET)
+if(NOT TBB_FOUND)
+  find_package(TBB MODULE REQUIRED)
+endif()
 
 # Embree
-find_package(embree 4 REQUIRED)
+# embree_ROOT has to be turned into a prefix path by hand: vcpkg's toolchain wraps
+# find_package() in a macro whose policy scope has CMP0074 unset, so the ROOT
+# variable would otherwise be silently ignored.
+if(embree_ROOT)
+  list(APPEND CMAKE_PREFIX_PATH "${embree_ROOT}")
+elseif(DEFINED ENV{embree_ROOT})
+  list(APPEND CMAKE_PREFIX_PATH "$ENV{embree_ROOT}")
+endif()
+
+find_package(embree 4 QUIET)
+if(NOT embree_FOUND)
+  # Nothing installed system-wide. Fall back to an official binary release unpacked
+  # next to the source tree: those are named embree-<version>.<arch>.<os> on every
+  # platform, e.g. ../embree-4.4.1.x64.windows or ../embree-4.4.1.x86_64.linux.
+  file(GLOB PRT_EMBREE_DIRS "${PROJECT_SOURCE_DIR}/../embree-*")
+  if(PRT_EMBREE_DIRS)
+    list(SORT PRT_EMBREE_DIRS COMPARE NATURAL ORDER DESCENDING) # newest version first
+    foreach(PRT_EMBREE_DIR ${PRT_EMBREE_DIRS})
+      if(IS_DIRECTORY "${PRT_EMBREE_DIR}")
+        list(APPEND CMAKE_PREFIX_PATH "${PRT_EMBREE_DIR}")
+      endif()
+    endforeach()
+  endif()
+  find_package(embree 4 REQUIRED)
+endif()
+message(STATUS "Found Embree ${EMBREE_VERSION}: ${embree_DIR}")
 
 # OpenImageDenoise
 option(PRT_OIDN_SUPPORT "OpenImageDenoise support" OFF)
 if(PRT_OIDN_SUPPORT)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DPRT_OIDN_SUPPORT")
+  add_compile_definitions(PRT_OIDN_SUPPORT)
   find_package(OpenImageDenoise 2 REQUIRED)
 endif()
 
 # Image I/O
 option(PRT_IMAGE_SUPPORT "Image support" ON)
 if(PRT_IMAGE_SUPPORT)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DPRT_IMAGE_SUPPORT")
+  add_compile_definitions(PRT_IMAGE_SUPPORT)
   find_package(OpenImageIO CONFIG REQUIRED)
 endif()
 
@@ -77,13 +148,13 @@ if(PRT_CONVERT_SUPPORT)
   if(NOT Boost_FOUND)
     find_package(Boost REQUIRED COMPONENTS iostreams)
   endif()
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DPRT_CONVERT_SUPPORT")
+  add_compile_definitions(PRT_CONVERT_SUPPORT)
 endif()
 
 # GUI
 option(PRT_GUI_SUPPORT "GUI support" ON)
 if(PRT_GUI_SUPPORT)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DPRT_GUI_SUPPORT")
+  add_compile_definitions(PRT_GUI_SUPPORT)
 endif()
 
 if(APPLE)
@@ -93,18 +164,19 @@ endif()
 
 option(PRT_PROFILE_MODE "Performance counters" OFF)
 if(PRT_PROFILE_MODE)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DPRT_PROFILE_MODE")
+  add_compile_definitions(PRT_PROFILE_MODE)
 endif()
 
 option(PRT_MUTATION_SUPPORT "Material mutation support" ON)
 if(PRT_MUTATION_SUPPORT)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DPRT_MUTATION_SUPPORT")
+  add_compile_definitions(PRT_MUTATION_SUPPORT)
 endif()
 
 # Other switches
 #set(HOST_CXX_FLAGS "${HOST_CXX_FLAGS} -S -masm=intel") # generate host asm
 
 # Find git version
+set(PRT_HASH 0)
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/.git)
   find_package(Git)
   if(GIT_FOUND)
@@ -114,16 +186,18 @@ if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/.git)
       OUTPUT_VARIABLE "PRT_HASH"
       ERROR_QUIET
       OUTPUT_STRIP_TRAILING_WHITESPACE)
-  else()
-    set(PRT_HASH 0)
   endif()
 endif()
 
-# Generate config.h
+# Generate config.h into the build tree, so that the source tree stays clean and
+# separate build directories do not overwrite each other's copy
 configure_file(
   "${PROJECT_SOURCE_DIR}/main/config.h.in"
-  "${PROJECT_SOURCE_DIR}/main/config.h"
+  "${CMAKE_CURRENT_BINARY_DIR}/main/config.h"
 )
+# BEFORE, so that a stale main/config.h left in the source tree by an older build
+# cannot shadow the generated one
+include_directories(BEFORE ${CMAKE_CURRENT_BINARY_DIR})
 
 set(SOURCES
   accel/embree_intersector.cpp
@@ -285,7 +359,7 @@ set(SOURCES
   light/sky_model/sky_model_data_ciexyz.h
   light/sky_model/sky_model_data_rgb.h
   light/sky_model/sky_model_data_spectral.h
-  main/config.h
+  ${CMAKE_CURRENT_BINARY_DIR}/main/config.h
   main/main.h
   main/main.cpp
   main/render/input.h
@@ -408,9 +482,10 @@ endif()
 
 add_executable(protoray ${SOURCES})
 if(HOST_CXX_FLAGS)
-  set_target_properties(protoray PROPERTIES COMPILE_FLAGS ${HOST_CXX_FLAGS})
+  separate_arguments(HOST_CXX_FLAGS_LIST NATIVE_COMMAND "${HOST_CXX_FLAGS}")
+  target_compile_options(protoray PRIVATE ${HOST_CXX_FLAGS_LIST})
 endif()
-if(NOT APPLE)
+if(UNIX AND NOT APPLE)
   target_link_libraries(protoray rt)
 endif()
 
@@ -432,12 +507,31 @@ endif()
 
 # Convert
 if(PRT_CONVERT_SUPPORT)
-  target_link_libraries(protoray ${Boost_LIBRARIES})
+  if(TARGET Boost::iostreams)
+    target_link_libraries(protoray Boost::iostreams)
+  else()
+    target_link_libraries(protoray ${Boost_LIBRARIES})
+  endif()
 endif()
 
 # GUI
 if(PRT_GUI_SUPPORT)
   find_package(SDL2 REQUIRED)
-  include_directories(protoray ${SDL2_INCLUDE_DIRS})
-  target_link_libraries(protoray ${SDL2_LIBRARIES})
+  if(TARGET SDL2::SDL2)
+    # Deliberately not SDL2::SDL2main: we provide our own main() (SDL_MAIN_HANDLED)
+    target_link_libraries(protoray SDL2::SDL2)
+  else()
+    target_include_directories(protoray PRIVATE ${SDL2_INCLUDE_DIRS})
+    target_link_libraries(protoray ${SDL2_LIBRARIES})
+  endif()
+endif()
+
+# Runtime dependencies
+if(WIN32)
+  # Windows has no rpath, so the Embree runtime has to sit next to the executable.
+  # (vcpkg copies the dependencies it owns itself.)
+  add_custom_command(TARGET protoray POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${EMBREE_ROOT_DIR}/bin/embree4.dll" "$<TARGET_FILE_DIR:protoray>"
+    VERBATIM)
 endif()

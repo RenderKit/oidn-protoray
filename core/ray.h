@@ -63,7 +63,7 @@ struct Ray
   prt_inline Vec3f getHitPoint(float& eps) const
   {
     Vec3f p = getHitPoint();
-    eps = max(far, reduceMax(abs(p))) * 0x1.fp-18;
+    eps = max(far, reduceMax(abs(p))) * 0x1.fp-18f;
     return p;
   }
 

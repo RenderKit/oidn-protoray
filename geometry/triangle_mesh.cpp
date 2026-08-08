@@ -81,7 +81,7 @@ void TriangleMesh::postIntersect(const Ray& ray, const Hit& hit, ShadingContext&
   }
 
   // Compute the UVs
-  if (texcoords[0])
+  if (hasTexcoords())
   {
     Vec2f uv0 = getTexcoord(0, tri[0]);
     Vec2f uv1 = getTexcoord(0, tri[1]);
@@ -134,7 +134,7 @@ void TriangleMesh::postIntersect(const Ray& ray, const Hit& hit, ShadingContext&
 
   for (int t = 1; t < maxNumUVs; ++t)
   {
-    if (t < static_cast<int>(texcoords.size()))
+    if (t < getTexcoordCount())
     {
       Vec2f uv0 = getTexcoord(t, tri[0]);
       Vec2f uv1 = getTexcoord(t, tri[1]);
@@ -191,7 +191,7 @@ void TriangleMesh::postIntersect(vbool m, const RaySimd& ray, const HitSimd& hit
   set(m, ctx.Ng, Ng);
   set(m, ctx.f.N, N);
 
-  if (texcoords[0])
+  if (hasTexcoords())
   {
     Vec2vf uv0 = getTexcoord(m, 0, tri[0]);
     Vec2vf uv1 = getTexcoord(m, 0, tri[1]);
@@ -242,7 +242,7 @@ void TriangleMesh::postIntersect(vbool m, const RaySimd& ray, const HitSimd& hit
 
   for (int t = 1; t < maxNumUVs; ++t)
   {
-    if (t < static_cast<int>(texcoords.size()))
+    if (t < getTexcoordCount())
     {
       Vec2vf uv0 = getTexcoord(m, t, tri[0]);
       Vec2vf uv1 = getTexcoord(m, t, tri[1]);
@@ -297,7 +297,7 @@ void TriangleMesh::postIntersect(vbool m, const RaySimd& ray, const HitSimd& hit
   set(m, ctx.Ng, Ng);
 }
 
-prt_inline Box3f TriangleMesh::getBounds()
+Box3f TriangleMesh::getBounds()
 {
   if (bounds.isValid())
     return bounds;
@@ -328,7 +328,7 @@ vint TriangleMesh::getMaterialId(vbool m, const HitSimd& hit, int level) const
 std::shared_ptr<Geometry> TriangleMesh::clone(Affine3f transform) const
 {
   std::shared_ptr<TriangleMesh> newMesh = std::make_shared<TriangleMesh>();
-  newMesh->alloc(getPrimCount(), getVertexCount(), normals != nullptr, static_cast<int>(texcoords.size()), materialIds.getSize() > 1);
+  newMesh->alloc(getPrimCount(), getVertexCount(), normals != nullptr, getTexcoordCount(), materialIds.getSize() > 1);
 
   // Copy indices
   for (int i = 0; i < getPrimCount(); ++i)
@@ -346,7 +346,7 @@ std::shared_ptr<Geometry> TriangleMesh::clone(Affine3f transform) const
   }
 
   // Copy vertex texcoords
-  for (int t = 0; t < static_cast<int>(texcoords.size()); ++t)
+  for (int t = 0; t < getTexcoordCount(); ++t)
   {
     for (int i = 0; i < getVertexCount(); ++i)
       newMesh->setTexcoord(t, i, getTexcoord(t, i));
@@ -385,7 +385,7 @@ Stream& operator <<(Stream& osm, const TriangleMesh& mesh)
 
   int triangleCount = mesh.indices.getSize();
   bool hasNormals = mesh.normals;
-  int8_t numTexcoords = static_cast<int8_t>(mesh.texcoords.size());
+  int8_t numTexcoords = static_cast<int8_t>(mesh.getTexcoordCount());
   osm << triangleCount << mesh.vertexCount << hasNormals << numTexcoords;
 
   osm.write(mesh.indices.getData(), mesh.indices.getSize() * sizeof(Vec3i));

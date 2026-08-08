@@ -3,6 +3,9 @@
 
 #include <fstream>
 #include <sys/stat.h>
+#ifdef _WIN32
+#include <direct.h> // _mkdir
+#endif
 #include "math/random.h"
 #include "mutex.h"
 #include "lock_guard.h"
@@ -40,12 +43,23 @@ std::string convertFilename(const std::string& filename)
 bool isDirectory(const std::string& path)
 {
   struct stat s;
-  return stat(path.c_str(), &s) == 0 && S_ISDIR(s.st_mode);
+  if (stat(path.c_str(), &s) != 0)
+    return false;
+#ifdef _WIN32
+  // The CRT does not provide S_ISDIR
+  return (s.st_mode & _S_IFMT) == _S_IFDIR;
+#else
+  return S_ISDIR(s.st_mode);
+#endif
 }
 
 bool makeDirectory(const std::string& path)
 {
+#ifdef _WIN32
+  return _mkdir(path.c_str()) == 0;
+#else
   return mkdir(path.c_str(), 0777) == 0;
+#endif
 }
 
 // Temp files

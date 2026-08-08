@@ -1,6 +1,7 @@
 // Copyright 2015 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+#include <cctype>
 #include "text_reader.h"
 
 namespace prt {
@@ -24,7 +25,9 @@ void TextReader::nextChar()
     }
   } while (c == '\r');
 
-  buffer = c;
+  // Keep the buffer in unsigned char range: char is signed on x86, and passing a
+  // negative value to isspace() is undefined (the Windows CRT asserts on it)
+  buffer = (unsigned char)c;
 }
 
 int TextReader::readChar()

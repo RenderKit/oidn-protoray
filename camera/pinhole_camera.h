@@ -36,7 +36,7 @@ public:
     origin  = position;
     imageO  = basis * Vec3f(-imageHalfWidth, imageHalfHeight, -1.f);
     imageDx = basis * Vec3f(2.f*imageHalfWidth, 0.f, 0.f);
-    imageDy = basis * Vec3f(0.f, -2.*imageHalfHeight, 0.f);
+    imageDy = basis * Vec3f(0.f, -2.f*imageHalfHeight, 0.f);
 
     const Mat4f worldToView = Affine3f(basis, position).toLocalMat();
 

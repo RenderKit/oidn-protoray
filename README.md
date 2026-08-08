@@ -11,11 +11,11 @@ Requirements:
 
 - CPU: x86-64, ARM64
 
-- OS: Linux, macOS
+- OS: Linux, Windows, macOS
 
 - C++17 compiler
 
-- CMake 3.10 or newer
+- CMake 3.16 or newer
 
 - [Intel® Embree](https://www.embree.org/)
 

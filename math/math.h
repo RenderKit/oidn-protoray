@@ -249,7 +249,7 @@ prt_inline UInt morton2D(const UInt x, const UInt y)
 // --------------------
 
 template <class T>
-prt_inline float toFloat(const T& x) { return T(x); }
+prt_inline float toFloat(const T& x) { return float(x); }
 
 prt_inline float toFloatUnorm(uint x) { return toFloat(x) * 0x1.0p-32f; }
 
@@ -264,10 +264,10 @@ prt_inline float toFloatUnormExcl(uint x)
 }
 
 template <class T>
-prt_inline int toInt(const T& x) { return T(x); }
+prt_inline int toInt(const T& x) { return int(x); }
 
 template <class T>
-prt_inline double toDouble(const T& x) { return T(x); }
+prt_inline double toDouble(const T& x) { return double(x); }
 
 prt_inline float asFloat(float x) { return x; }
 prt_inline float asFloat(int x) { return bitwise_cast<float>(x); }
@@ -288,6 +288,9 @@ prt_inline uint16_t toHalf(float x)
 #if defined(__ARM_NEON) || defined(__ARM_NEON__)
   float16_t h = (float16_t)x;
   return bitwise_cast<uint16_t>(h);
+#elif defined(_MSC_VER)
+  // MSVC has no scalar _cvtss_sh, only the packed F16C intrinsic
+  return uint16_t(_mm_cvtsi128_si32(_mm_cvtps_ph(_mm_set_ss(x), _MM_FROUND_CUR_DIRECTION)));
 #else
   return _cvtss_sh(x, _MM_FROUND_CUR_DIRECTION);
 #endif

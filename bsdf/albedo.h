@@ -43,13 +43,13 @@ struct MicrofacetAlbedo
   {
     GGXDistribution<float> microfacet(roughnessToAlpha(roughness));
 
-    int n = sqrt((float)numSamples);
+    int n = (int)sqrt((float)numSamples);
     float sum = 0.f;
     for (int i = 0; i < n; i++)
     {
       for (int j = 0; j < n; j++)
       {
-        Vec2f s = min((Vec2f(i, j) + 0.5f) / (float)n, Vec2f(1.f - 1e-6f));
+        Vec2f s = min((Vec2f((float)i, (float)j) + 0.5f) / (float)n, Vec2f(1.f - 1e-6f));
         sum += sample(cosThetaO, microfacet, s);
       }
     }
@@ -106,13 +106,13 @@ struct MicrofacetDielectricAlbedo
   {
     GGXDistribution<float> microfacet(roughnessToAlpha(roughness));
 
-    int n = sqrt((float)numSamples);
+    int n = (int)sqrt((float)numSamples);
     float sum = 0.f;
     for (int i = 0; i < n; i++)
     {
       for (int j = 0; j < n; j++)
       {
-        Vec2f s = min((Vec2f(i, j) + 0.5f) / (float)n, Vec2f(1.f - 1e-6f));
+        Vec2f s = min((Vec2f((float)i, (float)j) + 0.5f) / (float)n, Vec2f(1.f - 1e-6f));
         sum += sample(cosThetaO, eta, microfacet, s);
       }
     }
@@ -154,13 +154,13 @@ struct MicrofacetDielectricReflectionAlbedo
   {
     GGXDistribution<float> microfacet(roughnessToAlpha(roughness));
 
-    int n = sqrt((float)numSamples);
+    int n = (int)sqrt((float)numSamples);
     float sum = 0.f;
     for (int i = 0; i < n; i++)
     {
       for (int j = 0; j < n; j++)
       {
-        Vec2f s = min((Vec2f(i, j) + 0.5f) / (float)n, Vec2f(1.f - 1e-6f));
+        Vec2f s = min((Vec2f((float)i, (float)j) + 0.5f) / (float)n, Vec2f(1.f - 1e-6f));
         sum += sample(cosThetaO, eta, microfacet, s);
       }
     }
@@ -210,13 +210,13 @@ struct MicrofacetDielectricReflectionECAlbedo
 
   static float integrate(float cosThetaO, float eta, float roughness, int numSamples = 1024)
   {
-    int n = sqrt((float)numSamples);
+    int n = (int)sqrt((float)numSamples);
     float sum = 0.f;
     for (int i = 0; i < n; i++)
     {
       for (int j = 0; j < n; j++)
       {
-        Vec2f s = min((Vec2f(i, j) + 0.5f) / (float)n, Vec2f(1.f - 1e-6f));
+        Vec2f s = min((Vec2f((float)i, (float)j) + 0.5f) / (float)n, Vec2f(1.f - 1e-6f));
         sum += sample(cosThetaO, eta, roughness, s);
       }
     }
@@ -269,13 +269,13 @@ struct MicrofacetConductorArtisticECAlbedo
 
   static float integrate(float cosThetaO, float r, float g, float roughness, int numSamples = 1024)
   {
-    int n = sqrt((float)numSamples);
+    int n = (int)sqrt((float)numSamples);
     float sum = 0.f;
     for (int i = 0; i < n; i++)
     {
       for (int j = 0; j < n; j++)
       {
-        Vec2f s = min((Vec2f(i, j) + 0.5f) / (float)n, Vec2f(1.f - 1e-6f));
+        Vec2f s = min((Vec2f((float)i, (float)j) + 0.5f) / (float)n, Vec2f(1.f - 1e-6f));
         sum += sample(cosThetaO, r, g, roughness, s);
       }
     }
@@ -315,13 +315,13 @@ struct MicrofacetSheenAlbedo
   {
     SheenDistribution<float> microfacet(roughnessToAlpha(roughness));
 
-    int n = sqrt((float)numSamples);
+    int n = (int)sqrt((float)numSamples);
     float sum = 0.f;
     for (int i = 0; i < n; i++)
     {
       for (int j = 0; j < n; j++)
       {
-        Vec2f s = min((Vec2f(i, j) + 0.5f) / (float)n, Vec2f(1.f - 1e-6f));
+        Vec2f s = min((Vec2f((float)i, (float)j) + 0.5f) / (float)n, Vec2f(1.f - 1e-6f));
         sum += sample(cosThetaO, microfacet, s);
       }
     }

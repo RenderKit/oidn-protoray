@@ -445,7 +445,7 @@ prt_inline var<float,N> atan(const var<float,N>& xFull)
 template <int N>
 prt_inline var<float,N> atan2(const var<float,N>& y, const var<float,N>& x)
 {
-  const float piVec = 3.1415926536;
+  const float piVec = 3.1415926536f;
   // atan2(y, x) =
   //
   // atan2(y > 0, x = +-0) ->  Pi/2
@@ -469,8 +469,8 @@ prt_inline var<float,N> atan2(const var<float,N>& y, const var<float,N>& x)
 template <int N>
 prt_inline var<float,N> exp(const var<float,N>& xFull)
 {
-  const float ln2Part1 = 0.6931457519;
-  const float ln2Part2 = 1.4286067653e-6;
+  const float ln2Part1 = 0.6931457519f;
+  const float ln2Part2 = 1.4286067653e-6f;
   const float oneOverLn2 = 1.44269502162933349609375;
 
   auto scaled = xFull * oneOverLn2;

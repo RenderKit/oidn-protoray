@@ -3,15 +3,11 @@
 
 #pragma once
 
-#ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN
-#define NOMINMAX
-#include <Windows.h>
-#else
+#include "common.h" // includes <Windows.h> on Windows
+
+#ifndef _WIN32
 #include <pthread.h>
 #endif
-
-#include "common.h"
 
 namespace prt {
 

@@ -8,6 +8,41 @@
 
 namespace prt {
 
+#if defined(_MSC_VER)
+
+// MSVC has no __sync_* builtins; long is 32-bit on Windows, so it matches int/uint32_t
+prt_inline int atomicSwap(volatile int* ptr, int val)
+{
+  return int(_InterlockedExchange((volatile long*)ptr, long(val)));
+}
+
+prt_inline uint32_t atomicSwap(volatile uint32_t* ptr, uint32_t val)
+{
+  return uint32_t(_InterlockedExchange((volatile long*)ptr, long(val)));
+}
+
+prt_inline int atomicCas(volatile int* ptr, int oldVal, int newVal)
+{
+  return int(_InterlockedCompareExchange((volatile long*)ptr, long(newVal), long(oldVal)));
+}
+
+prt_inline uint32_t atomicCas(volatile uint32_t* ptr, uint32_t oldVal, uint32_t newVal)
+{
+  return uint32_t(_InterlockedCompareExchange((volatile long*)ptr, long(newVal), long(oldVal)));
+}
+
+prt_inline int atomicAdd(volatile int* ptr, int val)
+{
+  return int(_InterlockedExchangeAdd((volatile long*)ptr, long(val)));
+}
+
+prt_inline uint32_t atomicAdd(volatile uint32_t* ptr, uint32_t val)
+{
+  return uint32_t(_InterlockedExchangeAdd((volatile long*)ptr, long(val)));
+}
+
+#else
+
 prt_inline int atomicSwap(volatile int* ptr, int val)
 {
   return __sync_lock_test_and_set(ptr, val);
@@ -37,6 +72,8 @@ prt_inline uint32_t atomicAdd(volatile uint32_t* ptr, uint32_t val)
 {
   return __sync_fetch_and_add(ptr, val);
 }
+
+#endif
 
 prt_inline float atomicAdd(volatile float* ptr, float val)
 {

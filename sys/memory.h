@@ -29,6 +29,19 @@
 #define prt_align(ALIGNMENT) __attribute__((aligned(ALIGNMENT)))
 #endif
 
+// Prefetch with GCC's __builtin_prefetch(addr, rw, locality) signature.
+// MSVC has no such builtin, so map the locality hint onto _mm_prefetch (which has
+// no read/write variant, hence rw is ignored there).
+#ifdef _MSC_VER
+#define prt_prefetch(ADDR, RW, LOCALITY)                                \
+  _mm_prefetch((const char*)(ADDR),                                     \
+               (LOCALITY) >= 3 ? _MM_HINT_T0 :                          \
+               (LOCALITY) == 2 ? _MM_HINT_T1 :                          \
+               (LOCALITY) == 1 ? _MM_HINT_T2 : _MM_HINT_NTA)
+#else
+#define prt_prefetch(ADDR, RW, LOCALITY) __builtin_prefetch((ADDR), (RW), (LOCALITY))
+#endif
+
 #define prt_align_simd  prt_align(PRT_SIMD_REG_SIZE)
 #define prt_align_cache prt_align(PRT_CACHE_LINE_SIZE)
 
@@ -53,40 +66,40 @@ inline void copy(T* dest, const T* src, size_t count)
 
 prt_inline void prefetchL1(const void* data, int offset = 0)
 {
-  __builtin_prefetch((const char*)data+offset, 0, 3);
+  prt_prefetch((const char*)data+offset, 0, 3);
 }
 
 prt_inline void prefetchL2(const void* data, int offset = 0)
 {
-  __builtin_prefetch((const char*)data+offset, 0, 2);
+  prt_prefetch((const char*)data+offset, 0, 2);
 }
 
 prt_inline void prefetchL1Ex(const void* data, int offset = 0)
 {
-  __builtin_prefetch((const char*)data+offset, 1, 3);
+  prt_prefetch((const char*)data+offset, 1, 3);
 }
 
 prt_inline void prefetchL2Ex(const void* data, int offset = 0)
 {
-  __builtin_prefetch((const char*)data+offset, 1, 2);
+  prt_prefetch((const char*)data+offset, 1, 2);
 }
 
 prt_inline void prefetch2L1(const void* data, int offset = 0)
 {
-  __builtin_prefetch((const char*)data+offset,    0, 3);
-  __builtin_prefetch((const char*)data+offset+64, 0, 3);
+  prt_prefetch((const char*)data+offset,    0, 3);
+  prt_prefetch((const char*)data+offset+64, 0, 3);
 }
 
 prt_inline void prefetch2L1Ex(const void* data, int offset = 0)
 {
-  __builtin_prefetch((const char*)data+offset,    1, 3);
-  __builtin_prefetch((const char*)data+offset+64, 1, 3);
+  prt_prefetch((const char*)data+offset,    1, 3);
+  prt_prefetch((const char*)data+offset+64, 1, 3);
 }
 
 prt_inline void prefetch2L2Ex(const void* data, int offset = 0)
 {
-  __builtin_prefetch((const char*)data+offset,    1, 2);
-  __builtin_prefetch((const char*)data+offset+64, 1, 2);
+  prt_prefetch((const char*)data+offset,    1, 2);
+  prt_prefetch((const char*)data+offset+64, 1, 2);
 }
 
 // Memory object

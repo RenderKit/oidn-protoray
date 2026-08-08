@@ -3,17 +3,13 @@
 
 #pragma once
 
-#if defined(_WIN32)
-#define WIN32_LEAN_AND_MEAN
-#define NOMINMAX
-#include <Windows.h>
-#elif defined(__APPLE__)
+#include "common.h" // includes <Windows.h> on Windows
+
+#if defined(__APPLE__)
 #include <mach/mach_time.h>
-#else
+#elif !defined(_WIN32)
 #include <ctime>
 #endif
-
-#include <cassert>
 
 namespace prt {
 

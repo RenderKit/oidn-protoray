@@ -1,10 +1,9 @@
 // Copyright 2015 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-#if defined(_WIN32)
-  #include <Windows.h>
-  #include <intrin.h> // __cpuid
-#else
+#include "common.h" // includes <Windows.h> and <intrin.h> (__cpuid) on Windows
+
+#if !defined(_WIN32)
   #include <unistd.h>
   #include <sys/resource.h>
   #if defined(__APPLE__)
@@ -55,9 +54,8 @@ int getCpuCount()
 #if defined(PRT_SINGLE_THREADED)
   return 1;
 #elif defined(_WIN32)
-  SYSTEM_INFO systemInfo;
-  GetSystemInfo(&systemInfo);
-  return static_cast<int>(systemInfo.dwNumberOfProcessors);
+  // Not GetSystemInfo(): that one only counts the calling thread's processor group
+  return static_cast<int>(GetActiveProcessorCount(ALL_PROCESSOR_GROUPS));
 #else
   return static_cast<int>(sysconf(_SC_NPROCESSORS_CONF));
 #endif

@@ -4,12 +4,10 @@
 #pragma once
 
 #ifdef PRT_GUI_SUPPORT
+// We provide our own main(), so SDL must not #define main to SDL_main (Windows).
+// SDL_SetMainReady() is called before SDL_Init() instead.
+#define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
-#ifdef __APPLE__
-#include <OpenGL/gl.h>
-#else
-#include <GL/gl.h>
-#endif
 #endif
 
 #include "sys/common.h"

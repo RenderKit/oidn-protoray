@@ -918,7 +918,7 @@ void RenderWindow::onRender()
     const std::string baseFilename = sm.str();
     if (oriIsCheckpointEnabled)
     {
-      const int sppDigits = oriMaxSpp > 0 ? toString(oriMaxSpp).size() : 6;
+      const int sppDigits = oriMaxSpp > 0 ? static_cast<int>(toString(oriMaxSpp).size()) : 6;
       sm << "_" << std::setfill('0') << std::setw(sppDigits) << spp << "spp";
     }
     sm << outputSuffix;
@@ -1293,7 +1293,7 @@ void RenderWindow::saveScreenshot(const std::string& basename, bool withSequence
   std::stringstream suffixStream;
   if (withSequenceFrameIndex)
   {
-    const int frameDigits = toString(sequenceFrameCount-1).size();
+    const int frameDigits = static_cast<int>(toString(sequenceFrameCount-1).size());
     suffixStream << "." << std::setfill('0') << std::setw(frameDigits) << sequenceFrameIndex;
   }
 
@@ -1613,7 +1613,8 @@ void RenderWindow::mutate()
   const uint64_t id = mutationIndex == 0 ? seed : rng.get1ull();
   mutationIndex++;
   char idString[17];
-  snprintf(idString, sizeof(idString), "%016lx", id);
+  // %lx is only 32-bit on Windows (LLP64), so print through unsigned long long
+  snprintf(idString, sizeof(idString), "%016llx", (unsigned long long)id);
   outputId = idString;
   Log() << "Mutation: " << outputId;
 
@@ -2101,7 +2102,7 @@ void RenderWindow::mutate()
       // 3.5: ~ Gaussian 3.0 (PBRT)
       const float minWidth = 3.0f;
       const float maxWidth = 3.6f;
-      const float alphaSteps = 6;
+      const int alphaSteps = 6;
       float alpha = float(rng.get1i(0, alphaSteps)) / float(alphaSteps);
       float width = lerp(minWidth, maxWidth, alpha);
 

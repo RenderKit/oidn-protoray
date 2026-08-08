@@ -76,7 +76,7 @@ public:
 
   Props queryPixel(const Camera* camera, int x, int y)
   {
-    const Vec2f point = (Vec2f(x, y) + 0.5f) / toFloat(imageSize);
+    const Vec2f point = (Vec2f((float)x, (float)y) + 0.5f) / toFloat(imageSize);
     return queryPixel(camera, point);
   }
 
@@ -123,7 +123,7 @@ public:
 
   void queryPixel(const Camera* camera, int x, int y, Array<Props>& hits)
   {
-    const Vec2f point = (Vec2f(x, y) + 0.5f) / toFloat(imageSize);
+    const Vec2f point = (Vec2f((float)x, (float)y) + 0.5f) / toFloat(imageSize);
     queryPixel(camera, point, hits);
   }
 

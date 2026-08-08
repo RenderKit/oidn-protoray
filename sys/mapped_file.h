@@ -3,14 +3,7 @@
 
 #pragma once
 
-#ifdef _WIN32
-// Windows
-#define WIN32_LEAN_AND_MEAN
-#define NOMINMAX
-#include <Windows.h>
-#endif
-
-#include "common.h"
+#include "common.h" // includes <Windows.h> on Windows
 
 namespace prt {
 

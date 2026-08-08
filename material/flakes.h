@@ -71,7 +71,7 @@ public:
       {
         for (int k = -1; k <= 1; k++)
         {
-          const Vec3<Float> testCell = thisCell + Vec3<Float>(i, j, k);
+          const Vec3<Float> testCell = thisCell + Vec3<Float>((float)i, (float)j, (float)k);
 
           // Generate a random ID for the test cell
           UInt rnd = cellNoise1i(testCell);
