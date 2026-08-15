@@ -66,16 +66,20 @@ public:
        0, 0, nearClip, 0};
   }
 
+  // The unnormalized direction has a viewing direction component of exactly 1,
+  // thus the ray reaches the near plane at nearClip * dirLength
   prt_inline void getRay(Ray& ray, const CameraSample& s) const
   {
-    Vec3f dir = normalize(imageO + s.image.x * imageDx + s.image.y * imageDy);
-    ray.init(origin, dir, nearClip);
+    Vec3f dir = imageO + s.image.x * imageDx + s.image.y * imageDy;
+    float dirLength = length(dir);
+    ray.init(origin, dir * rcp(dirLength), nearClip * dirLength);
   }
 
   prt_inline void getRay(RaySimd& ray, const CameraSampleSimd& s) const
   {
-    Vec3vf dir = normalize(Vec3vf(imageO) + s.image.x * Vec3vf(imageDx) + s.image.y * Vec3vf(imageDy));
-    ray.init(origin, dir, nearClip);
+    Vec3vf dir = Vec3vf(imageO) + s.image.x * Vec3vf(imageDx) + s.image.y * Vec3vf(imageDy);
+    vfloat dirLength = length(dir);
+    ray.init(origin, dir * rcp(dirLength), vfloat(nearClip) * dirLength);
   }
 };
 

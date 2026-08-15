@@ -34,7 +34,7 @@ class Camera
 public:
   Vec3f origin;
   Basis3f basis;
-  float nearClip;
+  float nearClip; // distance of the near plane, measured along the viewing direction
   //float farClip;
 
   Mat4f worldToViewD3D;
